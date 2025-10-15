@@ -8,6 +8,10 @@
   # Node.js version
   [build.environment]
     NODE_VERSION = "18"
+    # Disable secrets scanning for Supabase keys (these are public keys)
+    SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY"
+    # Alternative: Disable secrets scanning entirely
+    # SECRETS_SCAN_ENABLED = "false"
 
 # Redirect all routes to index.html for SPA
 [[redirects]]
