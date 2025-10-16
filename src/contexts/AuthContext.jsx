@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const appBaseUrl = import.meta.env.VITE_SITE_URL || window.location.origin
 
   useEffect(() => {
     // Get initial session
@@ -116,7 +117,7 @@ export const AuthProvider = ({ children }) => {
   const resetPassword = async (email) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${appBaseUrl}/reset-password`,
       })
       if (error) throw error
       toast.success('Password reset email sent!')
