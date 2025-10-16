@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -36,7 +37,7 @@ function App() {
     
     // Redirect to /reset-password when arriving via Supabase recovery link
     // Example: https://site/#access_token=...&type=recovery
-    React.useEffect(() => {
+    useEffect(() => {
       const hash = window.location.hash || ''
       const params = new URLSearchParams(hash.replace(/^#/, ''))
       const isRecovery = params.get('type') === 'recovery'
