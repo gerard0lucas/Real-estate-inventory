@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -30,10 +30,28 @@ import Unauthorized from './pages/Unauthorized'
 import NotFound from './pages/NotFound'
 
 function App() {
+  const HashRecoveryRedirect = () => {
+    const navigate = useNavigate()
+    const location = useLocation()
+    
+    // Redirect to /reset-password when arriving via Supabase recovery link
+    // Example: https://site/#access_token=...&type=recovery
+    React.useEffect(() => {
+      const hash = window.location.hash || ''
+      const params = new URLSearchParams(hash.replace(/^#/, ''))
+      const isRecovery = params.get('type') === 'recovery'
+      if (isRecovery && location.pathname !== '/reset-password') {
+        navigate('/reset-password', { replace: true })
+      }
+    }, [location.pathname, navigate])
+    return null
+  }
+
   return (
     <Router>
       <AuthProvider>
         <Toaster position="top-right" />
+        <HashRecoveryRedirect />
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
