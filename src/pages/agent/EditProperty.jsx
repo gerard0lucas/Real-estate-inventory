@@ -26,6 +26,18 @@ export default function EditProperty() {
     address: '',
     status: 'available',
     images: [],
+    property_code: '',
+    property_code_type: '',
+    owner_details: {
+      name: '',
+      phone: ''
+    },
+    broker_details: {
+      name: '',
+      phone: ''
+    },
+    price_per_sqft: '',
+    location_url: ''
   })
 
   useEffect(() => {
@@ -77,6 +89,18 @@ export default function EditProperty() {
         address: data.address || '',
         status: data.status || 'available',
         images: data.images || [],
+        property_code: data.property_code || '',
+        property_code_type: data.property_code_type || '',
+        owner_details: data.owner_details || {
+          name: '',
+          phone: ''
+        },
+        broker_details: data.broker_details || {
+          name: '',
+          phone: ''
+        },
+        price_per_sqft: data.price_per_sqft || '',
+        location_url: data.location_url || ''
       })
     } catch (error) {
       console.error('Error fetching property:', error)
@@ -88,11 +112,32 @@ export default function EditProperty() {
   }
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value,
-    })
+    const { name, value, type, checked } = e.target
+    
+    if (name.startsWith('owner_details.')) {
+      const field = name.split('.')[1]
+      setFormData({
+        ...formData,
+        owner_details: {
+          ...formData.owner_details,
+          [field]: value
+        }
+      })
+    } else if (name.startsWith('broker_details.')) {
+      const field = name.split('.')[1]
+      setFormData({
+        ...formData,
+        broker_details: {
+          ...formData.broker_details,
+          [field]: value
+        }
+      })
+    } else {
+      setFormData({
+        ...formData,
+        [name]: type === 'checkbox' ? checked : value,
+      })
+    }
   }
 
   const handleImageUpload = async (e) => {
@@ -147,11 +192,23 @@ export default function EditProperty() {
 
     try {
       const propertyData = {
-        ...formData,
-        price: parseFloat(formData.price),
+        project_id: formData.project_id,
+        title: formData.title,
+        type: formData.type,
+        price: formData.price ? parseFloat(formData.price) : null,
+        description: formData.description,
         bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
         bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
         area: formData.area ? parseFloat(formData.area) : null,
+        address: formData.address,
+        status: formData.status,
+        images: formData.images,
+        property_code: formData.property_code,
+        property_code_type: formData.property_code_type,
+        owner_details: formData.owner_details,
+        broker_details: formData.broker_details,
+        price_per_sqft: formData.price_per_sqft ? parseFloat(formData.price_per_sqft) : null,
+        location_url: formData.location_url
       }
 
       const { error } = await supabase
@@ -235,8 +292,8 @@ export default function EditProperty() {
             />
           </div>
 
-          {/* Type and Status */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          {/* Type, Status, and Property Code in Single Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             <div>
               <label className="block text-sm font-medium text-primary-700 mb-2">
                 Property Type *
@@ -254,6 +311,7 @@ export default function EditProperty() {
                 <option value="Villa">Villa</option>
                 <option value="Condo">Condo</option>
                 <option value="Townhouse">Townhouse</option>
+                <option value="Site">Site</option>
               </select>
             </div>
 
@@ -273,6 +331,25 @@ export default function EditProperty() {
                 <option value="sold">Sold</option>
               </select>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-primary-700 mb-2">
+                Property Code Type
+              </label>
+              <select
+                name="property_code_type"
+                value={formData.property_code_type}
+                onChange={handleChange}
+                className="input-field"
+              >
+                <option value="">Select code type</option>
+                <option value="New Apartment">New Apartment - NA001</option>
+                <option value="Old Apartment">Old Apartment - OA001</option>
+                <option value="New House">New House - NH001</option>
+                <option value="Old House">Old House - OH001</option>
+                <option value="Site">Site - S001</option>
+              </select>
+            </div>
           </div>
 
           {/* Price */}
@@ -290,6 +367,23 @@ export default function EditProperty() {
               min="0"
               step="1000"
               required
+            />
+          </div>
+
+          {/* Price per Square Feet */}
+          <div>
+            <label className="block text-sm font-medium text-primary-700 mb-2">
+              Price per Square Feet (INR)
+            </label>
+            <input
+              type="number"
+              name="price_per_sqft"
+              value={formData.price_per_sqft}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="4167"
+              min="0"
+              step="1"
             />
           </div>
 
@@ -354,6 +448,89 @@ export default function EditProperty() {
               className="input-field"
               placeholder="Sector 62, Noida, UP 201301"
             />
+          </div>
+
+          {/* Location URL */}
+          <div>
+            <label className="block text-sm font-medium text-primary-700 mb-2">
+              Location URL
+            </label>
+            <input
+              type="url"
+              name="location_url"
+              value={formData.location_url}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="https://maps.google.com/..."
+            />
+          </div>
+
+          {/* Owner Details Section */}
+          <div className="bg-blue-50 p-4 sm:p-6 rounded-lg">
+            <h3 className="text-lg font-medium text-primary-900 mb-4">Owner Details</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <label className="block text-sm font-medium text-primary-700 mb-2">
+                  Owner Name
+                </label>
+                <input
+                  type="text"
+                  name="owner_details.name"
+                  value={formData.owner_details.name}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="John Doe"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-primary-700 mb-2">
+                  Owner Phone
+                </label>
+                <input
+                  type="tel"
+                  name="owner_details.phone"
+                  value={formData.owner_details.phone}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="+91 9876543210"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Broker Details Section */}
+          <div className="bg-green-50 p-4 sm:p-6 rounded-lg">
+            <h3 className="text-lg font-medium text-primary-900 mb-4">Broker Details</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <label className="block text-sm font-medium text-primary-700 mb-2">
+                  Broker Name
+                </label>
+                <input
+                  type="text"
+                  name="broker_details.name"
+                  value={formData.broker_details.name}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Jane Smith"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-primary-700 mb-2">
+                  Broker Phone
+                </label>
+                <input
+                  type="tel"
+                  name="broker_details.phone"
+                  value={formData.broker_details.phone}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="+91 9876543210"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Description */}
