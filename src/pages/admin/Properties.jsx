@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Layout from '../../components/Layout'
 import toast from 'react-hot-toast'
-import { Home, Search, Filter, Edit2, Trash2, Eye, Plus, X, Share2, Copy, MapPin, Phone, User, Building, Calendar, ExternalLink } from 'lucide-react'
+import { Home, Search, Filter, Edit2, Trash2, Eye, Plus, X, Share2, Copy, MapPin, Phone, User, Building, Calendar, ExternalLink, Grid3X3, Table } from 'lucide-react'
 
 export default function AdminProperties() {
   const [properties, setProperties] = useState([])
@@ -17,6 +17,7 @@ export default function AdminProperties() {
     maxPrice: '',
   })
   const [showFilters, setShowFilters] = useState(false)
+  const [viewMode, setViewMode] = useState('grid') // 'grid' or 'table'
 
   const generateWhatsAppMessage = (property) => {
     const message = `🏠 *${property.title}*
@@ -27,7 +28,7 @@ export default function AdminProperties() {
 🏡 *Type:* ${property.type || 'N/A'}
 🛏️ *Bedrooms:* ${property.bedrooms || 'N/A'}
 🚿 *Bathrooms:* ${property.bathrooms || 'N/A'}
-📐 *Area:* ${property.area ? `${property.area} sqft` : 'N/A'}
+📐 *Area:* ${property.area ? `${parseFloat(property.area) || property.area} sqft` : 'N/A'}
 👨‍💼 *Agent:* ${property.agent?.name || 'N/A'}
 📧 *Contact:* ${property.agent?.email || 'N/A'}
 
@@ -66,7 +67,7 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
 🏡 Type: ${property.type || 'N/A'}
 🛏️ Bedrooms: ${property.bedrooms || 'N/A'}
 🚿 Bathrooms: ${property.bathrooms || 'N/A'}
-📐 Area: ${property.area ? `${property.area} sqft` : 'N/A'}
+📐 Area: ${property.area ? `${parseFloat(property.area) || property.area} sqft` : 'N/A'}
 👨‍💼 Agent: ${property.agent?.name || 'N/A'}
 📧 Contact: ${property.agent?.email || 'N/A'}
 
@@ -220,10 +221,37 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
             <h1 className="text-2xl sm:text-3xl font-semibold text-brown">Magixland Properties</h1>
             <p className="text-brown-light mt-1 sm:mt-2 text-sm sm:text-base">View and manage all property listings</p>
           </div>
-          <Link to="/admin/properties/add" className="btn-primary flex items-center justify-center sm:justify-start">
-            <Plus className="w-5 h-5 mr-2" />
-            Add Property
-          </Link>
+          <div className="flex items-center gap-3">
+            {/* Grid/Table Toggle */}
+            <div className="flex items-center border border-cream-dark rounded-lg overflow-hidden bg-cream-light">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-4 py-2 flex items-center gap-2 transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-cream text-brown border-r border-cream-dark'
+                    : 'bg-cream-light text-brown-light hover:bg-cream'
+                }`}
+              >
+                <Grid3X3 className="w-4 h-4" />
+                <span className="text-sm font-medium">Grid</span>
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={`px-4 py-2 flex items-center gap-2 transition-colors ${
+                  viewMode === 'table'
+                    ? 'bg-cream text-brown border-l border-cream-dark'
+                    : 'bg-cream-light text-brown-light hover:bg-cream'
+                }`}
+              >
+                <Table className="w-4 h-4" />
+                <span className="text-sm font-medium">Table</span>
+              </button>
+            </div>
+            <Link to="/admin/properties/add" className="btn-primary flex items-center justify-center sm:justify-start">
+              <Plus className="w-5 h-5 mr-2" />
+              <span className="hidden sm:inline">Add Property</span>
+            </Link>
+          </div>
         </div>
 
         {/* Search and Filter */}
@@ -317,13 +345,14 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
           Showing {filteredProperties.length} of {properties.length} properties
         </div>
 
-        {/* Properties Grid */}
+        {/* Properties Display */}
         {filteredProperties.length === 0 ? (
           <div className="card text-center py-12">
             <Home className="w-12 h-12 text-brown-light mx-auto mb-4" />
             <p className="text-brown-light">No properties found</p>
           </div>
-        ) : (
+        ) : viewMode === 'grid' ? (
+          /* Grid View */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredProperties.map((property) => (
               <div key={property.id} className="card-elevated">
@@ -378,22 +407,18 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
                   
                   {/* Property specs with icons */}
                   <div className="flex items-center text-xs sm:text-sm text-brown-light space-x-3 sm:space-x-4">
-                    {property.bedrooms && (
-                      <div className="flex items-center">
-                        <i className="fas fa-bed mr-1 text-brown-light"></i>
-                        <span>{property.bedrooms} beds</span>
-                      </div>
-                    )}
-                    {property.bathrooms && (
-                      <div className="flex items-center">
-                        <i className="fas fa-bath mr-1 text-brown-light"></i>
-                        <span>{property.bathrooms} baths</span>
-                      </div>
-                    )}
+                    <div className="flex items-center">
+                      <i className="fas fa-bed mr-1 text-brown-light"></i>
+                      <span>{property.bedrooms > 0 ? `${property.bedrooms} beds` : 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <i className="fas fa-bath mr-1 text-brown-light"></i>
+                      <span>{property.bathrooms > 0 ? `${property.bathrooms} baths` : 'N/A'}</span>
+                    </div>
                     {property.area && (
                       <div className="flex items-center">
                         <i className="fas fa-ruler-combined mr-1 text-brown-light"></i>
-                        <span>{property.area} sqft</span>
+                        <span>{parseFloat(property.area) || property.area} sqft</span>
                       </div>
                     )}
                   </div>
@@ -448,6 +473,109 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
                 </div>
               </div>
             ))}
+          </div>
+        ) : (
+          /* Table View */
+          <div className="card overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-cream-dark">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-brown">Property</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-brown">Type</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-brown">Price</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-brown">Area</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-brown">Status</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-brown">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProperties.map((property) => (
+                  <tr key={property.id} className="border-b border-cream-dark hover:bg-cream transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-cream flex-shrink-0">
+                          {property.images && property.images.length > 0 ? (
+                            <img src={property.images[0]} alt={property.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Home className="w-6 h-6 text-brown-light" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-brown">{property.title}</p>
+                          <p className="text-xs text-brown-light">{property.project?.name}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-sm text-brown-light">{property.type}</span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-sm font-semibold text-brown">₹{property.price?.toLocaleString('en-IN')}</span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1">
+                        <i className="fas fa-ruler-combined text-brown-light"></i>
+                        <span className="text-sm text-brown-light">
+                          {property.area ? `${parseFloat(property.area) || property.area} sqft` : 'N/A'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`badge ${
+                        property.status === 'available'
+                          ? 'badge-success'
+                          : property.status === 'pending'
+                          ? 'badge-warning'
+                          : 'badge-info'
+                      }`}>
+                        {property.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-center gap-1">
+                        <Link
+                          to={`/admin/properties/details/${property.id}`}
+                          className="p-2 text-brown-light hover:text-brown hover:bg-cream rounded-lg transition-colors"
+                          title="View details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                        <button
+                          onClick={() => shareOnWhatsApp(property)}
+                          className="p-2 text-brown-light hover:text-brown hover:bg-cream rounded-lg transition-colors"
+                          title="Share on WhatsApp"
+                        >
+                          <Share2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => copyToClipboard(property)}
+                          className="p-2 text-brown-light hover:text-brown hover:bg-cream rounded-lg transition-colors"
+                          title="Copy details"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                        <Link
+                          to={`/admin/properties/edit/${property.id}`}
+                          className="p-2 text-brown-light hover:text-brown hover:bg-cream rounded-lg transition-colors"
+                          title="Edit property"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteProperty(property.id)}
+                          className="p-2 text-danger-600 hover:text-danger-700 hover:bg-danger-50 rounded-lg transition-colors"
+                          title="Delete property"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 

@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   User,
+  ClipboardList,
 } from 'lucide-react'
 
 export default function Layout({ children }) {
@@ -29,11 +30,13 @@ export default function Layout({ children }) {
     { name: 'Manage Agents', href: '/admin/agents', icon: Users, faIcon: 'fas fa-users' },
     { name: 'Projects', href: '/admin/projects', icon: FolderKanban, faIcon: 'fas fa-folder-open' },
     { name: 'Properties', href: '/admin/properties', icon: Home, faIcon: 'fas fa-home' },
+    { name: 'Requirements', href: '/admin/requirements', icon: ClipboardList, faIcon: 'fas fa-clipboard-list' },
   ]
 
   const agentNavigation = [
     { name: 'Dashboard', href: '/agent/dashboard', icon: LayoutDashboard, faIcon: 'fas fa-tachometer-alt' },
     { name: 'All Properties', href: '/agent/properties', icon: Home, faIcon: 'fas fa-home' },
+    { name: 'Requirements', href: '/agent/requirements', icon: ClipboardList, faIcon: 'fas fa-clipboard-list' },
   ]
 
   const navigation = isAdmin ? adminNavigation : agentNavigation

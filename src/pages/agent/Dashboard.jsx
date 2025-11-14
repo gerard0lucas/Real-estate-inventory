@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Layout from '../../components/Layout'
 import toast from 'react-hot-toast'
-import { Home, Plus, TrendingUp, DollarSign, Share2, Copy } from 'lucide-react'
+import { Home, Plus, TrendingUp, DollarSign, Share2, Copy, ClipboardList } from 'lucide-react'
 
 export default function AgentDashboard() {
   const { user } = useAuth()
@@ -15,6 +15,7 @@ export default function AgentDashboard() {
     pendingProperties: 0,
   })
   const [recentProperties, setRecentProperties] = useState([])
+  const [recentRequirements, setRecentRequirements] = useState([])
   const [loading, setLoading] = useState(true)
 
   const generateWhatsAppMessage = (property) => {
@@ -25,7 +26,7 @@ export default function AgentDashboard() {
 🏡 *Type:* ${property.type || 'N/A'}
 🛏️ *Bedrooms:* ${property.bedrooms || 'N/A'}
 🚿 *Bathrooms:* ${property.bathrooms || 'N/A'}
-📐 *Area:* ${property.area ? `${property.area} sqft` : 'N/A'}
+📐 *Area:* ${property.area ? `${parseFloat(property.area) || property.area} sqft` : 'N/A'}
 👨‍💼 *Agent:* ${property.agent?.name || 'N/A'}
 📧 *Contact:* ${property.agent?.email || 'N/A'}
 
@@ -54,7 +55,7 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
 🏡 Type: ${property.type || 'N/A'}
 🛏️ Bedrooms: ${property.bedrooms || 'N/A'}
 🚿 Bathrooms: ${property.bathrooms || 'N/A'}
-📐 Area: ${property.area ? `${property.area} sqft` : 'N/A'}
+📐 Area: ${property.area ? `${parseFloat(property.area) || property.area} sqft` : 'N/A'}
 👨‍💼 Agent: ${property.agent?.name || 'N/A'}
 📧 Contact: ${property.agent?.email || 'N/A'}
 
@@ -119,6 +120,15 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}`
       })
 
       setRecentProperties(properties?.slice(0, 5) || [])
+
+      // Fetch recent requirements
+      const { data: requirements } = await supabase
+        .from('property_requirements')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      setRecentRequirements(requirements || [])
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
       toast.error('Failed to load dashboard data')
@@ -301,6 +311,82 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}`
                     </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Requirements */}
+        <div className="mobile-form-section mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-primary-900 flex items-center">
+              <i className="fas fa-clipboard-list text-primary-700 mr-2"></i>
+              Recent Requirements (All)
+            </h2>
+            <Link
+              to="/agent/requirements"
+              className="text-primary-600 hover:text-primary-700 text-sm font-medium self-start sm:self-center flex items-center"
+            >
+              <i className="fas fa-external-link-alt mr-1"></i>
+              View All
+            </Link>
+          </div>
+
+          {recentRequirements.length === 0 ? (
+            <div className="text-center py-8 sm:py-12">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <i className="fas fa-clipboard-list text-primary-600 text-2xl sm:text-3xl"></i>
+              </div>
+              <p className="text-primary-600 mb-4 text-sm sm:text-base font-medium">No requirements yet</p>
+              <Link to="/agent/requirements/add" className="btn-primary mobile-btn">
+                <i className="fas fa-plus mr-2"></i>
+                Add Your First Requirement
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3 sm:space-y-4">
+              {recentRequirements.map((requirement) => (
+                <Link
+                  key={requirement.id}
+                  to={`/agent/requirements/details/${requirement.id}`}
+                  className="flex items-start sm:items-center p-4 border border-primary-100 rounded-2xl hover:bg-primary-50 transition-all duration-200 hover:shadow-sm"
+                >
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <i className="fas fa-clipboard-list text-primary-400 text-xl sm:text-2xl"></i>
+                  </div>
+                  <div className="ml-4 flex-1 min-w-0">
+                    <h3 className="font-bold text-primary-900 truncate text-sm sm:text-base mb-1">
+                      {requirement.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-primary-600 mb-1 flex items-center">
+                      <i className="fas fa-user mr-1 text-primary-500"></i>
+                      {requirement.customer_name}
+                    </p>
+                    <p className="text-xs text-primary-500 mb-1 flex items-center">
+                      <i className="fas fa-home mr-1 text-primary-400"></i>
+                      {requirement.property_type || 'N/A'}
+                    </p>
+                    {requirement.price && (
+                      <p className="text-sm sm:text-base font-bold text-primary-700 flex items-center">
+                        <i className="fas fa-rupee-sign mr-1 text-primary-600"></i>
+                        ₹{requirement.price.toLocaleString('en-IN')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                    <span
+                      className={`badge ${
+                        requirement.status === 'active'
+                          ? 'badge-success'
+                          : requirement.status === 'fulfilled'
+                          ? 'badge-warning'
+                          : 'badge-info'
+                      }`}
+                    >
+                      {requirement.status}
+                    </span>
+                  </div>
+                </Link>
               ))}
             </div>
           )}

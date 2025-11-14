@@ -18,6 +18,9 @@ import AdminProperties from './pages/admin/Properties'
 import AdminAddProperty from './pages/admin/AddProperty'
 import AdminEditProperty from './pages/admin/EditProperty'
 import AdminPropertyDetails from './pages/admin/PropertyDetails'
+import AdminRequirements from './pages/admin/Requirements'
+import AdminAddRequirement from './pages/admin/AddRequirement'
+import AdminRequirementDetails from './pages/admin/RequirementDetails'
 
 // Agent Pages
 import AgentDashboard from './pages/agent/Dashboard'
@@ -25,6 +28,9 @@ import AgentProperties from './pages/agent/Properties'
 import AddProperty from './pages/agent/AddProperty'
 import EditProperty from './pages/agent/EditProperty'
 import AgentPropertyDetails from './pages/agent/PropertyDetails'
+import AgentRequirements from './pages/agent/Requirements'
+import AddRequirement from './pages/agent/AddRequirement'
+import AgentRequirementDetails from './pages/agent/RequirementDetails'
 
 // Common Pages
 import Unauthorized from './pages/Unauthorized'
@@ -117,6 +123,30 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/requirements"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminRequirements />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/requirements/add"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminAddRequirement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/requirements/details/:id"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminRequirementDetails />
+              </ProtectedRoute>
+            }
+          />
           
           {/* Agent Routes */}
           <Route
@@ -164,6 +194,30 @@ function App() {
             element={
               <ProtectedRoute requiredRole="agent">
                 <AgentPropertyDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/requirements"
+            element={
+              <ProtectedRoute requiredRole="agent">
+                <AgentRequirements />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/requirements/add"
+            element={
+              <ProtectedRoute requiredRole="agent">
+                <AddRequirement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/requirements/details/:id"
+            element={
+              <ProtectedRoute requiredRole="agent">
+                <AgentRequirementDetails />
               </ProtectedRoute>
             }
           />

@@ -360,6 +360,171 @@ BEGIN
 END;
 $$;
 
+-- Create property_requirements table
+CREATE TABLE IF NOT EXISTS property_requirements (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  customer_name VARCHAR(255) NOT NULL,
+  customer_phone VARCHAR(20) NOT NULL,
+  customer_email VARCHAR(255),
+  property_type VARCHAR(100),
+  price DECIMAL(15, 2),
+  bedrooms INTEGER,
+  bathrooms INTEGER,
+  area DECIMAL(10, 2),
+  preferred_locations JSONB DEFAULT '[]'::jsonb,
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'closed', 'fulfilled')),
+  priority VARCHAR(20) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+  assigned_agent_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  notes TEXT,
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add migration to change from min/max to single fields (if table already exists)
+DO $$
+BEGIN
+    -- Add new single columns if they don't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'property_requirements' AND column_name = 'price') THEN
+        ALTER TABLE property_requirements ADD COLUMN price DECIMAL(15, 2);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'property_requirements' AND column_name = 'bedrooms') THEN
+        ALTER TABLE property_requirements ADD COLUMN bedrooms INTEGER;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'property_requirements' AND column_name = 'bathrooms') THEN
+        ALTER TABLE property_requirements ADD COLUMN bathrooms INTEGER;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'property_requirements' AND column_name = 'area') THEN
+        ALTER TABLE property_requirements ADD COLUMN area DECIMAL(10, 2);
+    END IF;
+
+    -- Copy data from min/max fields to single fields (using max values as defaults)
+    -- Only update if the max columns exist
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'max_price') THEN
+        UPDATE property_requirements 
+        SET price = max_price 
+        WHERE max_price IS NOT NULL AND price IS NULL;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'max_bedrooms') THEN
+        UPDATE property_requirements 
+        SET bedrooms = max_bedrooms 
+        WHERE max_bedrooms IS NOT NULL AND bedrooms IS NULL;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'max_bathrooms') THEN
+        UPDATE property_requirements 
+        SET bathrooms = max_bathrooms 
+        WHERE max_bathrooms IS NOT NULL AND bathrooms IS NULL;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'max_area') THEN
+        UPDATE property_requirements 
+        SET area = max_area 
+        WHERE max_area IS NOT NULL AND area IS NULL;
+    END IF;
+
+    -- Drop the min/max columns if they exist
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'min_price') THEN
+        ALTER TABLE property_requirements DROP COLUMN min_price;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'max_price') THEN
+        ALTER TABLE property_requirements DROP COLUMN max_price;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'min_bedrooms') THEN
+        ALTER TABLE property_requirements DROP COLUMN min_bedrooms;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'max_bedrooms') THEN
+        ALTER TABLE property_requirements DROP COLUMN max_bedrooms;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'min_bathrooms') THEN
+        ALTER TABLE property_requirements DROP COLUMN min_bathrooms;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'max_bathrooms') THEN
+        ALTER TABLE property_requirements DROP COLUMN max_bathrooms;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'min_area') THEN
+        ALTER TABLE property_requirements DROP COLUMN min_area;
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'property_requirements' AND column_name = 'max_area') THEN
+        ALTER TABLE property_requirements DROP COLUMN max_area;
+    END IF;
+END $$;
+
+-- Add property requirements policies
+ALTER TABLE property_requirements ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Property requirements are viewable by authenticated users." ON property_requirements;
+CREATE POLICY "Property requirements are viewable by authenticated users."
+  ON property_requirements FOR SELECT
+  USING (auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "Agents can insert property requirements." ON property_requirements;
+CREATE POLICY "Agents can insert property requirements."
+  ON property_requirements FOR INSERT
+  WITH CHECK (
+    auth.uid() IS NOT NULL
+  );
+
+DROP POLICY IF EXISTS "Agents can update their assigned requirements." ON property_requirements;
+CREATE POLICY "Agents can update their assigned requirements."
+  ON property_requirements FOR UPDATE
+  USING (assigned_agent_id = auth.uid());
+
+DROP POLICY IF EXISTS "Admins can manage all property requirements." ON property_requirements;
+CREATE POLICY "Admins can manage all property requirements."
+  ON property_requirements FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.role = 'admin'
+    )
+  );
+
+-- Create trigger for property_requirements updated_at
+DROP TRIGGER IF EXISTS update_property_requirements_updated_at ON property_requirements;
+CREATE TRIGGER update_property_requirements_updated_at BEFORE UPDATE ON property_requirements
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Create indexes for property_requirements
+DROP INDEX IF EXISTS idx_property_requirements_assigned_agent_id;
+CREATE INDEX idx_property_requirements_assigned_agent_id ON property_requirements(assigned_agent_id);
+DROP INDEX IF EXISTS idx_property_requirements_status;
+CREATE INDEX idx_property_requirements_status ON property_requirements(status);
+DROP INDEX IF EXISTS idx_property_requirements_priority;
+CREATE INDEX idx_property_requirements_priority ON property_requirements(priority);
+DROP INDEX IF EXISTS idx_property_requirements_created_by;
+CREATE INDEX idx_property_requirements_created_by ON property_requirements(created_by);
+
 -- Create function to generate property codes (moved here to ensure property_code column exists)
 CREATE OR REPLACE FUNCTION generate_property_code(
   property_type TEXT,

@@ -49,7 +49,7 @@ export default function PropertyDetails() {
 🏡 *Type:* ${property.type || 'N/A'}
 🛏️ *Bedrooms:* ${property.bedrooms || 'N/A'}
 🚿 *Bathrooms:* ${property.bathrooms || 'N/A'}
-📐 *Area:* ${property.area ? `${property.area} sqft` : 'N/A'}
+📐 *Area:* ${property.area ? `${parseFloat(property.area) || property.area} sqft` : 'N/A'}
 👨‍💼 *Agent:* ${property.agent?.name || 'N/A'}
 📧 *Contact:* ${property.agent?.email || 'N/A'}
 
@@ -88,7 +88,7 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
 🏡 Type: ${property.type || 'N/A'}
 🛏️ Bedrooms: ${property.bedrooms || 'N/A'}
 🚿 Bathrooms: ${property.bathrooms || 'N/A'}
-📐 Area: ${property.area ? `${property.area} sqft` : 'N/A'}
+📐 Area: ${property.area ? `${parseFloat(property.area) || property.area} sqft` : 'N/A'}
 👨‍💼 Agent: ${property.agent?.name || 'N/A'}
 📧 Contact: ${property.agent?.email || 'N/A'}
 
@@ -254,7 +254,7 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
                   <i className="fas fa-ruler-combined text-brown-light"></i>
                   <div>
                     <p className="text-xs text-brown-light">Area</p>
-                    <p className="text-sm font-bold text-brown">{property.area ? `${property.area} sqft` : 'N/A'}</p>
+                    <p className="text-sm font-bold text-brown">{property.area ? `${parseFloat(property.area) || property.area} sqft` : 'N/A'}</p>
                   </div>
                 </div>
               </div>

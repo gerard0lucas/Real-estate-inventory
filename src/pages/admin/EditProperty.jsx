@@ -467,9 +467,17 @@ export default function AdminEditProperty() {
                 name="area"
                 value={formData.area}
                 onChange={handleChange}
+                onBlur={(e) => {
+                  // Strip leading zeros when user finishes typing
+                  const value = e.target.value
+                  if (value && !isNaN(value)) {
+                    setFormData(prev => ({ ...prev, area: parseFloat(value).toString() }))
+                  }
+                }}
                 className="input-field"
                 placeholder="1200"
                 min="0"
+                step="0.01"
               />
             </div>
           </div>

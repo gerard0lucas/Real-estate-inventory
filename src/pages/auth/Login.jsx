@@ -56,7 +56,7 @@ export default function Login() {
               className="h-full w-auto object-contain"
             />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-brown">Magixland Dashboard</h1>
+          
           <p className="text-brown-light mt-1 sm:mt-2 text-sm sm:text-base font-medium">Sign in to manage your properties</p>
         </div>
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Layout from '../../components/Layout'
-import { Users, FolderKanban, Home, TrendingUp, Plus } from 'lucide-react'
+import { Users, FolderKanban, Home, TrendingUp, Plus, ClipboardList } from 'lucide-react'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -14,6 +14,8 @@ export default function AdminDashboard() {
     pendingProperties: 0,
   })
   const [recentProperties, setRecentProperties] = useState([])
+  const [recentRequirements, setRecentRequirements] = useState([])
+  const [totalRequirements, setTotalRequirements] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -54,6 +56,11 @@ export default function AdminDashboard() {
         .select('*', { count: 'exact', head: true })
         .eq('status', 'pending')
 
+      // Fetch requirements count
+      const { count: requirementsCount } = await supabase
+        .from('property_requirements')
+        .select('*', { count: 'exact', head: true })
+
       // Fetch recent properties
       const { data: properties } = await supabase
         .from('properties')
@@ -62,6 +69,13 @@ export default function AdminDashboard() {
           agent:profiles!properties_agent_id_fkey(name),
           project:projects(name)
         `)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      // Fetch recent requirements
+      const { data: requirements } = await supabase
+        .from('property_requirements')
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(5)
 
@@ -75,6 +89,8 @@ export default function AdminDashboard() {
       })
 
       setRecentProperties(properties || [])
+      setRecentRequirements(requirements || [])
+      setTotalRequirements(requirementsCount || 0)
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {
@@ -108,12 +124,12 @@ export default function AdminDashboard() {
       link: '/admin/properties',
     },
     {
-      name: 'Available',
-      value: stats.availableProperties,
-      icon: TrendingUp,
+      name: 'Total Requirements',
+      value: totalRequirements,
+      icon: ClipboardList,
       color: 'bg-warning-100',
       iconColor: 'text-warning-700',
-      link: '/admin/properties?status=available',
+      link: '/admin/requirements',
     },
   ]
 
@@ -121,7 +137,7 @@ export default function AdminDashboard() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown"></div>
         </div>
       </Layout>
     )
@@ -131,8 +147,8 @@ export default function AdminDashboard() {
     <Layout>
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-semibold text-primary-900">Admin Dashboard</h1>
-          <p className="text-primary-600 mt-1 sm:mt-2 text-sm sm:text-base">Welcome back! Here's your overview.</p>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-brown">Admin Dashboard</h1>
+          <p className="text-brown-light mt-1 sm:mt-2 text-sm sm:text-base">Welcome back! Here's your overview.</p>
         </div>
 
         {/* Stats Grid */}
@@ -146,12 +162,12 @@ export default function AdminDashboard() {
                 className="card-elevated"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center">
-                  <div className={`p-2 sm:p-3 rounded-xl ${stat.color} mb-2 sm:mb-0 self-start`}>
+                  <div className={`p-2 sm:p-3 rounded-xl ${stat.color} mb-2 sm:mb-0 flex-shrink-0 self-start sm:self-auto`}>
                     <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.iconColor}`} />
                   </div>
-                  <div className="sm:ml-4">
-                    <p className="text-xs sm:text-sm text-primary-600 mb-1">{stat.name}</p>
-                    <p className="text-xl sm:text-2xl font-semibold text-primary-900">{stat.value}</p>
+                  <div className="sm:ml-4 flex-1">
+                    <p className="text-xs sm:text-sm text-primary-600 mb-1 text-left">{stat.name}</p>
+                    <p className="text-xl sm:text-2xl font-semibold text-primary-900 text-left">{stat.value}</p>
                   </div>
                 </div>
               </Link>
@@ -159,20 +175,22 @@ export default function AdminDashboard() {
           })}
         </div>
 
-        {/* Status Breakdown */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
-          <div className="card text-center">
-            <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2 text-primary-700">Available</h3>
-            <p className="text-xl sm:text-3xl font-semibold text-success-600">{stats.availableProperties}</p>
+        {/* Status Breakdown - Aligned with top row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+          <div className="card">
+            <h3 className="text-xs sm:text-sm text-primary-600 mb-1 text-left">Available</h3>
+            <p className="text-xl sm:text-2xl font-semibold text-success-600 text-left">{stats.availableProperties}</p>
           </div>
-          <div className="card text-center">
-            <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2 text-primary-700">Pending</h3>
-            <p className="text-xl sm:text-3xl font-semibold text-warning-600">{stats.pendingProperties}</p>
+          <div className="card">
+            <h3 className="text-xs sm:text-sm text-primary-600 mb-1 text-left">Pending</h3>
+            <p className="text-xl sm:text-2xl font-semibold text-warning-600 text-left">{stats.pendingProperties}</p>
           </div>
-          <div className="card text-center">
-            <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2 text-primary-700">Sold</h3>
-            <p className="text-xl sm:text-3xl font-semibold text-primary-600">{stats.soldProperties}</p>
+          <div className="card">
+            <h3 className="text-xs sm:text-sm text-primary-600 mb-1 text-left">Sold</h3>
+            <p className="text-xl sm:text-2xl font-semibold text-primary-600 text-left">{stats.soldProperties}</p>
           </div>
+          {/* Empty space to maintain grid alignment */}
+          <div className="hidden lg:block"></div>
         </div>
 
         {/* Recent Properties */}
@@ -220,6 +238,61 @@ export default function AdminDashboard() {
                           }`}
                         >
                           {property.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Recent Requirements */}
+        <div className="card mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-primary-900">Recent Requirements</h2>
+            <Link to="/admin/requirements" className="text-primary-600 hover:text-primary-700 text-sm font-medium self-start sm:self-center">
+              View All
+            </Link>
+          </div>
+          {recentRequirements.length === 0 ? (
+            <div className="text-center py-8 sm:py-12">
+              <ClipboardList className="w-10 h-10 sm:w-12 sm:h-12 text-primary-300 mx-auto mb-3 sm:mb-4" />
+              <p className="text-primary-600 text-sm sm:text-base">No requirements yet</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="mobile-table">
+                <thead>
+                  <tr className="border-b border-primary-100">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-primary-700">Title</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-primary-700">Customer</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-primary-700">Property Type</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-primary-700">Price</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-primary-700">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentRequirements.map((requirement) => (
+                    <tr key={requirement.id} className="border-b border-primary-50 hover:bg-primary-50">
+                      <td className="py-3 px-4 text-primary-800" data-label="Title">{requirement.title}</td>
+                      <td className="py-3 px-4 text-primary-600" data-label="Customer">{requirement.customer_name}</td>
+                      <td className="py-3 px-4 text-primary-600" data-label="Property Type">{requirement.property_type || 'N/A'}</td>
+                      <td className="py-3 px-4 text-primary-800 font-medium" data-label="Price">
+                        {requirement.price ? `₹${requirement.price.toLocaleString('en-IN')}` : 'N/A'}
+                      </td>
+                      <td className="py-3 px-4" data-label="Status">
+                        <span
+                          className={`badge ${
+                            requirement.status === 'active'
+                              ? 'badge-success'
+                              : requirement.status === 'fulfilled'
+                              ? 'badge-warning'
+                              : 'badge-info'
+                          }`}
+                        >
+                          {requirement.status}
                         </span>
                       </td>
                     </tr>

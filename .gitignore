@@ -4,18 +4,26 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+yarn.lock
+pnpm-lock.yaml
 
 # Build outputs
 dist/
 dist-ssr/
 build/
+out/
+.next/
+.nuxt/
+.output/
 
 # Environment variables
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
 
 # Runtime data
 pids
@@ -23,21 +31,39 @@ pids
 *.seed
 *.pid.lock
 
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
-
-# nyc test coverage
 .nyc_output
+
+# Test files and outputs
+test-results/
+playwright-report/
+playwright/.cache/
 
 # Dependency directories
 jspm_packages/
 
 # Optional npm cache directory
 .npm
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
 # Optional eslint cache
 .eslintcache
+.stylelintcache
 
 # Microbundle cache
 .rpt2_cache/
@@ -50,27 +76,27 @@ jspm_packages/
 
 # Output of 'npm pack'
 *.tgz
+*.tar.gz
 
 # Yarn Integrity file
 .yarn-integrity
 
-# parcel-bundler cache (https://parceljs.org/)
+# parcel-bundler cache
 .cache
 .parcel-cache
 
-# Next.js build output
-.next
-
-# Nuxt.js build / generate output
-.nuxt
+# Vite
+.vite/
 
 # Storybook build outputs
-.out
 .storybook-out
+storybook-static
 
 # Temporary folders
 tmp/
 temp/
+*.tmp
+*.temp
 
 # Editor directories and files
 .vscode/
@@ -78,6 +104,12 @@ temp/
 *.swp
 *.swo
 *~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
 
 # OS generated files
 .DS_Store
@@ -87,11 +119,69 @@ temp/
 .Trashes
 ehthumbs.db
 Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
 # Supabase local development
 supabase/.branches
 supabase/.temp
+.branches/
+.temp/
 
-# Documentation files
+# Documentation files (all markdown files)
 *.md
+!README.md
+
+# License files
+LICENSE
+LICENSE.txt
+
+# Config files that might contain secrets
+*.config.local.*
+config.local.*
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Archive files
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
+# Image files (if you don't want to commit images)
+# Uncomment if needed:
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
+# *.svg
+# *.ico
+# *.webp
+
+# Video/Audio files
+*.mp4
+*.avi
+*.mov
+*.mp3
+*.wav
+
+# PDF files
+*.pdf
+
+# Excel/Office files
+*.xlsx
+*.xls
+*.docx
+*.doc
+*.pptx
+*.ppt
 
