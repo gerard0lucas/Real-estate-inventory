@@ -35,6 +35,7 @@ export default function Layout({ children }) {
 
   const agentNavigation = [
     { name: 'Dashboard', href: '/agent/dashboard', icon: LayoutDashboard, faIcon: 'fas fa-tachometer-alt' },
+    { name: 'Projects', href: '/agent/projects', icon: FolderKanban, faIcon: 'fas fa-folder-open' },
     { name: 'All Properties', href: '/agent/properties', icon: Home, faIcon: 'fas fa-home' },
     { name: 'Requirements', href: '/agent/requirements', icon: ClipboardList, faIcon: 'fas fa-clipboard-list' },
   ]

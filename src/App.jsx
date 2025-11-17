@@ -24,6 +24,7 @@ import AdminRequirementDetails from './pages/admin/RequirementDetails'
 
 // Agent Pages
 import AgentDashboard from './pages/agent/Dashboard'
+import AgentProjects from './pages/agent/Projects'
 import AgentProperties from './pages/agent/Properties'
 import AddProperty from './pages/agent/AddProperty'
 import EditProperty from './pages/agent/EditProperty'
@@ -154,6 +155,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="agent">
                 <AgentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/projects"
+            element={
+              <ProtectedRoute requiredRole="agent">
+                <AgentProjects />
               </ProtectedRoute>
             }
           />

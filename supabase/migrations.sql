@@ -168,19 +168,18 @@ CREATE POLICY "Projects are viewable by authenticated users."
   ON projects FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
-DROP POLICY IF EXISTS "Admins can insert projects." ON projects;
-CREATE POLICY "Admins can insert projects."
+DROP POLICY IF EXISTS "Authenticated users can insert projects." ON projects;
+CREATE POLICY "Authenticated users can insert projects."
   ON projects FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE profiles.id = auth.uid()
-      AND profiles.role = 'admin'
-    )
-  );
+  WITH CHECK (auth.uid() IS NOT NULL);
 
-DROP POLICY IF EXISTS "Admins can update projects." ON projects;
-CREATE POLICY "Admins can update projects."
+DROP POLICY IF EXISTS "Users can update projects they created." ON projects;
+CREATE POLICY "Users can update projects they created."
+  ON projects FOR UPDATE
+  USING (created_by = auth.uid());
+
+DROP POLICY IF EXISTS "Admins can update any project." ON projects;
+CREATE POLICY "Admins can update any project."
   ON projects FOR UPDATE
   USING (
     EXISTS (
@@ -190,8 +189,13 @@ CREATE POLICY "Admins can update projects."
     )
   );
 
-DROP POLICY IF EXISTS "Admins can delete projects." ON projects;
-CREATE POLICY "Admins can delete projects."
+DROP POLICY IF EXISTS "Users can delete projects they created." ON projects;
+CREATE POLICY "Users can delete projects they created."
+  ON projects FOR DELETE
+  USING (created_by = auth.uid());
+
+DROP POLICY IF EXISTS "Admins can delete any project." ON projects;
+CREATE POLICY "Admins can delete any project."
   ON projects FOR DELETE
   USING (
     EXISTS (
