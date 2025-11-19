@@ -140,97 +140,125 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
   }, [searchTerm, properties])
 
   const generateSearchSuggestions = (term) => {
-    const lowerTerm = term.toLowerCase()
+    const lowerTerm = term.toLowerCase().trim()
+    if (!lowerTerm) {
+      setSearchSuggestions([])
+      return
+    }
+
     const suggestions = []
     const seen = new Set()
-    const maxSuggestions = 8
+    const maxSuggestions = 10
 
+    // First pass: collect all matching suggestions with priority scoring
     properties.forEach((property) => {
-      if (suggestions.length >= maxSuggestions) return
-
-      // Property title
-      if (property.title?.toLowerCase().includes(lowerTerm)) {
-        const key = `property-${property.title}`
-        if (!seen.has(key)) {
-          seen.add(key)
-          suggestions.push({
-            text: property.title,
-            type: 'Property',
-            icon: Home,
-          })
+      // Property title (highest priority - exact match at start)
+      if (property.title) {
+        const titleLower = property.title.toLowerCase()
+        if (titleLower.includes(lowerTerm)) {
+          const key = `property-${property.title}`
+          if (!seen.has(key)) {
+            seen.add(key)
+            const priority = titleLower.startsWith(lowerTerm) ? 1 : titleLower.indexOf(lowerTerm)
+            suggestions.push({
+              text: property.title,
+              type: 'Property',
+              icon: Home,
+              priority: priority,
+            })
+          }
         }
       }
 
-      if (suggestions.length >= maxSuggestions) return
-
-      // Property code
-      if (property.property_code?.toLowerCase().includes(lowerTerm)) {
-        const key = `code-${property.property_code}`
-        if (!seen.has(key)) {
-          seen.add(key)
-          suggestions.push({
-            text: property.property_code,
-            type: 'Code',
-            icon: Building,
-          })
+      // Property code (high priority)
+      if (property.property_code) {
+        const codeLower = property.property_code.toLowerCase()
+        if (codeLower.includes(lowerTerm)) {
+          const key = `code-${property.property_code}`
+          if (!seen.has(key)) {
+            seen.add(key)
+            const priority = codeLower.startsWith(lowerTerm) ? 2 : codeLower.indexOf(lowerTerm) + 100
+            suggestions.push({
+              text: property.property_code,
+              type: 'Code',
+              icon: Building,
+              priority: priority,
+            })
+          }
         }
       }
-
-      if (suggestions.length >= maxSuggestions) return
 
       // Project name
-      if (property.project?.name?.toLowerCase().includes(lowerTerm)) {
-        const key = `project-${property.project.name}`
-        if (!seen.has(key)) {
-          seen.add(key)
-          suggestions.push({
-            text: property.project.name,
-            type: 'Project',
-            icon: MapPin,
-          })
+      if (property.project?.name) {
+        const projectLower = property.project.name.toLowerCase()
+        if (projectLower.includes(lowerTerm)) {
+          const key = `project-${property.project.name}`
+          if (!seen.has(key)) {
+            seen.add(key)
+            const priority = projectLower.startsWith(lowerTerm) ? 3 : projectLower.indexOf(lowerTerm) + 200
+            suggestions.push({
+              text: property.project.name,
+              type: 'Project',
+              icon: MapPin,
+              priority: priority,
+            })
+          }
         }
       }
-
-      if (suggestions.length >= maxSuggestions) return
 
       // Address
-      if (property.address?.toLowerCase().includes(lowerTerm)) {
-        const addressPreview = property.address.length > 50 
-          ? property.address.substring(0, 50) + '...'
-          : property.address
-        const key = `address-${property.address}`
-        if (!seen.has(key)) {
-          seen.add(key)
-          suggestions.push({
-            text: addressPreview,
-            type: 'Address',
-            icon: MapPin,
-          })
+      if (property.address) {
+        const addressLower = property.address.toLowerCase()
+        if (addressLower.includes(lowerTerm)) {
+          const addressPreview = property.address.length > 50 
+            ? property.address.substring(0, 50) + '...'
+            : property.address
+          const key = `address-${property.address}`
+          if (!seen.has(key)) {
+            seen.add(key)
+            const priority = addressLower.startsWith(lowerTerm) ? 4 : addressLower.indexOf(lowerTerm) + 300
+            suggestions.push({
+              text: addressPreview,
+              type: 'Address',
+              icon: MapPin,
+              priority: priority,
+            })
+          }
         }
       }
 
-      if (suggestions.length >= maxSuggestions) return
-
       // Agent name
-      if (property.agent?.name?.toLowerCase().includes(lowerTerm)) {
-        const key = `agent-${property.agent.name}`
-        if (!seen.has(key)) {
-          seen.add(key)
-          suggestions.push({
-            text: property.agent.name,
-            type: 'Agent',
-            icon: User,
-          })
+      if (property.agent?.name) {
+        const agentLower = property.agent.name.toLowerCase()
+        if (agentLower.includes(lowerTerm)) {
+          const key = `agent-${property.agent.name}`
+          if (!seen.has(key)) {
+            seen.add(key)
+            const priority = agentLower.startsWith(lowerTerm) ? 5 : agentLower.indexOf(lowerTerm) + 400
+            suggestions.push({
+              text: property.agent.name,
+              type: 'Agent',
+              icon: User,
+              priority: priority,
+            })
+          }
         }
       }
     })
 
-    setSearchSuggestions(suggestions.slice(0, maxSuggestions))
+    // Sort by priority (lower number = higher priority) and limit
+    const sortedSuggestions = suggestions
+      .sort((a, b) => a.priority - b.priority)
+      .slice(0, maxSuggestions)
+      .map(({ priority, ...rest }) => rest) // Remove priority from final result
+
+    setSearchSuggestions(sortedSuggestions)
   }
 
   const handleSuggestionClick = (suggestion) => {
     setSearchTerm(suggestion.text)
     setShowSuggestions(false)
+    setSelectedSuggestionIndex(-1)
   }
 
   const handleKeyDown = (e) => {
@@ -307,18 +335,42 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
   const filterProperties = () => {
     let filtered = [...properties]
 
-    // Search filter
+    // Search filter - more comprehensive matching
     if (searchTerm) {
-      filtered = filtered.filter(
-        (property) =>
-          property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          property.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          property.project?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          property.agent?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          property.property_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          property.owner_details?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          property.broker_details?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      const lowerSearchTerm = searchTerm.toLowerCase().trim()
+      filtered = filtered.filter((property) => {
+        // Check title
+        if (property.title?.toLowerCase().includes(lowerSearchTerm)) return true
+        
+        // Check property code
+        if (property.property_code?.toLowerCase().includes(lowerSearchTerm)) return true
+        
+        // Check project name
+        if (property.project?.name?.toLowerCase().includes(lowerSearchTerm)) return true
+        
+        // Check address
+        if (property.address?.toLowerCase().includes(lowerSearchTerm)) return true
+        
+        // Check agent name
+        if (property.agent?.name?.toLowerCase().includes(lowerSearchTerm)) return true
+        
+        // Check owner details
+        if (property.owner_details?.name?.toLowerCase().includes(lowerSearchTerm)) return true
+        if (property.owner_details?.phone?.includes(lowerSearchTerm)) return true
+        
+        // Check broker details
+        if (property.broker_details?.name?.toLowerCase().includes(lowerSearchTerm)) return true
+        if (property.broker_details?.phone?.includes(lowerSearchTerm)) return true
+        
+        // Check description
+        if (property.description?.toLowerCase().includes(lowerSearchTerm)) return true
+        
+        // Check type
+        if (property.type?.toLowerCase().includes(lowerSearchTerm)) return true
+        if (property.property_code_type?.toLowerCase().includes(lowerSearchTerm)) return true
+        
+        return false
+      })
     }
 
     // Status filter
@@ -499,9 +551,12 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
                 }}
                 onKeyDown={handleKeyDown}
                 onFocus={() => searchTerm.length > 0 && setShowSuggestions(true)}
-                onBlur={() => {
-                  // Delay hiding to allow click events
-                  setTimeout(() => setShowSuggestions(false), 200)
+                onBlur={(e) => {
+                  // Only hide if not clicking on a suggestion
+                  const relatedTarget = e.relatedTarget
+                  if (!relatedTarget || !relatedTarget.closest('.search-suggestions')) {
+                    setTimeout(() => setShowSuggestions(false), 150)
+                  }
                 }}
                 placeholder="Search properties..."
                 className="input-field pl-9 sm:pl-10 text-sm sm:text-base py-2.5 sm:py-3"
@@ -509,14 +564,17 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
               
               {/* Search Suggestions Dropdown */}
               {showSuggestions && searchSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-cream-dark rounded-lg shadow-lg z-50 max-h-64 sm:max-h-80 overflow-y-auto">
+                <div className="search-suggestions absolute top-full left-0 right-0 mt-1 bg-white border border-cream-dark rounded-lg shadow-lg z-50 max-h-64 sm:max-h-80 overflow-y-auto">
                   {searchSuggestions.map((suggestion, index) => {
                     const Icon = suggestion.icon
                     return (
                       <button
                         key={`${suggestion.type}-${suggestion.text}-${index}`}
                         type="button"
-                        onClick={() => handleSuggestionClick(suggestion)}
+                        onMouseDown={(e) => {
+                          e.preventDefault() // Prevent input blur
+                          handleSuggestionClick(suggestion)
+                        }}
                         onMouseEnter={() => setSelectedSuggestionIndex(index)}
                         className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3 hover:bg-cream active:bg-cream transition-colors touch-manipulation ${
                           index === selectedSuggestionIndex ? 'bg-cream' : ''
