@@ -37,7 +37,8 @@ export default function AdminEditProperty() {
       phone: ''
     },
     price_per_sqft: '',
-    location_url: ''
+    location_url: '',
+    source_type: ''
   })
 
   useEffect(() => {
@@ -111,7 +112,8 @@ export default function AdminEditProperty() {
           phone: ''
         },
         price_per_sqft: data.price_per_sqft || '',
-        location_url: data.location_url || ''
+        location_url: data.location_url || '',
+        source_type: data.source_type || ''
       })
     } catch (error) {
       console.error('Error fetching property:', error)
@@ -226,7 +228,8 @@ export default function AdminEditProperty() {
         owner_details: formData.owner_details,
         broker_details: formData.broker_details,
         price_per_sqft: formData.price_per_sqft ? parseFloat(formData.price_per_sqft) : null,
-        location_url: formData.location_url
+        location_url: formData.location_url,
+        source_type: formData.source_type
       }
 
       const { error } = await supabase
@@ -510,6 +513,23 @@ export default function AdminEditProperty() {
               className="input-field"
               placeholder="https://maps.google.com/..."
             />
+          </div>
+
+          {/* Source Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Source Type
+            </label>
+            <select
+              name="source_type"
+              value={formData.source_type}
+              onChange={handleChange}
+              className="input-field"
+            >
+              <option value="">Select source type</option>
+              <option value="Inhouse">Inhouse</option>
+              <option value="Others">Others</option>
+            </select>
           </div>
 
           {/* Owner Details Section */}

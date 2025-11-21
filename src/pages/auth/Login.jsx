@@ -151,15 +151,6 @@ export default function Login() {
             </div>
           )}
 
-          <div className="mt-5 sm:mt-6 text-center">
-            <p className="text-sm text-brown-light">
-              Don't have an account?{' '}
-              <Link to="/signup" className="text-brown hover:text-brown-dark font-medium flex items-center justify-center">
-                <i className="fas fa-user-plus mr-1"></i>
-                Sign up
-              </Link>
-            </p>
-          </div>
         </div>
 
       </div>

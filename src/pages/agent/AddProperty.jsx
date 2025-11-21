@@ -36,7 +36,8 @@ export default function AddProperty() {
       phone: ''
     },
     price_per_sqft: '',
-    location_url: ''
+    location_url: '',
+    source_type: ''
   })
 
   useEffect(() => {
@@ -154,7 +155,8 @@ export default function AddProperty() {
           phone: ''
         },
         price_per_sqft: data.price_per_sqft || '',
-        location_url: data.location_url || ''
+        location_url: data.location_url || '',
+        source_type: data.source_type || ''
       })
 
       toast.success('Property details copied! You can now edit and save.')
@@ -308,7 +310,8 @@ export default function AddProperty() {
         owner_details: formData.owner_details,
         broker_details: formData.broker_details,
         price_per_sqft: formData.price_per_sqft ? parseFloat(formData.price_per_sqft) : null,
-        location_url: formData.location_url
+        location_url: formData.location_url,
+        source_type: formData.source_type
       }
 
       console.log('Submitting property data:', propertyData)
@@ -568,6 +571,23 @@ export default function AddProperty() {
               className="input-field"
               placeholder="https://maps.google.com/..."
             />
+          </div>
+
+          {/* Source Type */}
+          <div>
+            <label className="block text-sm font-medium text-primary-700 mb-2">
+              Source Type
+            </label>
+            <select
+              name="source_type"
+              value={formData.source_type}
+              onChange={handleChange}
+              className="input-field"
+            >
+              <option value="">Select source type</option>
+              <option value="Inhouse">Inhouse</option>
+              <option value="Others">Others</option>
+            </select>
           </div>
 
           {/* Owner Details Section */}

@@ -65,6 +65,8 @@ ${property.broker_details?.name ? `🏢 *Broker:* ${property.broker_details.name
 
 ${property.price_per_sqft ? `💰 *Price per Sq Ft:* ₹${property.price_per_sqft.toLocaleString('en-IN')}` : ''}
 
+${property.source_type ? `📌 *Source Type:* ${property.source_type}` : ''}
+
 Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
 
 🏢 *Magixland Real Estate*
@@ -103,6 +105,8 @@ ${property.owner_details?.name ? `👤 Owner: ${property.owner_details.name}\n�
 ${property.broker_details?.name ? `🏢 Broker: ${property.broker_details.name}\n📞 Broker Phone: ${property.broker_details.phone || 'N/A'}` : ''}
 
 ${property.price_per_sqft ? `💰 Price per Sq Ft: ₹${property.price_per_sqft.toLocaleString('en-IN')}` : ''}
+
+${property.source_type ? `📌 Source Type: ${property.source_type}` : ''}
 
 Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
 
@@ -221,7 +225,7 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Key Info Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               <div className="bg-cream-light border border-cream-dark p-4 rounded-lg">
                 <div className="flex items-center space-x-2">
                   <i className="fas fa-hashtag text-brown-light"></i>
@@ -258,6 +262,17 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
                   </div>
                 </div>
               </div>
+              {property.source_type && (
+                <div className="bg-cream-light border border-cream-dark p-4 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <i className="fas fa-tag text-brown-light"></i>
+                    <div>
+                      <p className="text-xs text-brown-light">Source Type</p>
+                      <p className="text-sm font-bold text-brown">{property.source_type}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Images */}
@@ -363,7 +378,56 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
           </div>
 
           {/* Right Column - Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-6 mt-8">
+            {/* Project & Agent Info */}
+            <div className="space-y-4">
+              <div className="bg-cream-light border border-cream-dark p-4 sm:p-6 rounded-lg">
+                <h3 className="text-lg font-bold text-brown mb-4 flex items-center">
+                  <i className="fas fa-building mr-2 text-brown-light"></i>
+                  Project Information
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <i className="fas fa-building text-brown-light text-xs"></i>
+                    <div>
+                      <p className="text-xs text-brown-light">Name</p>
+                      <p className="text-sm font-bold text-brown">{property.project?.name}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <i className="fas fa-map-marker-alt text-brown-light text-xs"></i>
+                    <div>
+                      <p className="text-xs text-brown-light">Location</p>
+                      <p className="text-sm font-bold text-brown">{property.project?.location}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-cream-light border border-cream-dark p-4 sm:p-6 rounded-lg">
+                <h3 className="text-lg font-bold text-brown mb-4 flex items-center">
+                  <i className="fas fa-user-tie mr-2 text-brown-light"></i>
+                  Assigned Agent
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <i className="fas fa-user text-brown-light text-xs"></i>
+                    <div>
+                      <p className="text-xs text-brown-light">Name</p>
+                      <p className="text-sm font-bold text-brown">{property.agent?.name}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <i className="fas fa-envelope text-brown-light text-xs"></i>
+                    <div>
+                      <p className="text-xs text-brown-light">Email</p>
+                      <p className="text-sm font-bold text-brown">{property.agent?.email}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Contact Information */}
             <div className="space-y-4">
               {property.owner_details?.name && (
@@ -415,55 +479,6 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Project & Agent Info */}
-            <div className="space-y-4">
-              <div className="bg-cream-light border border-cream-dark p-4 sm:p-6 rounded-lg">
-                <h3 className="text-lg font-bold text-brown mb-4 flex items-center">
-                  <i className="fas fa-building mr-2 text-brown-light"></i>
-                  Project Information
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <i className="fas fa-building text-brown-light text-xs"></i>
-                    <div>
-                      <p className="text-xs text-brown-light">Name</p>
-                      <p className="text-sm font-bold text-brown">{property.project?.name}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <i className="fas fa-map-marker-alt text-brown-light text-xs"></i>
-                    <div>
-                      <p className="text-xs text-brown-light">Location</p>
-                      <p className="text-sm font-bold text-brown">{property.project?.location}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-cream-light border border-cream-dark p-4 sm:p-6 rounded-lg">
-                <h3 className="text-lg font-bold text-brown mb-4 flex items-center">
-                  <i className="fas fa-user-tie mr-2 text-brown-light"></i>
-                  Assigned Agent
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <i className="fas fa-user text-brown-light text-xs"></i>
-                    <div>
-                      <p className="text-xs text-brown-light">Name</p>
-                      <p className="text-sm font-bold text-brown">{property.agent?.name}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <i className="fas fa-envelope text-brown-light text-xs"></i>
-                    <div>
-                      <p className="text-xs text-brown-light">Email</p>
-                      <p className="text-sm font-bold text-brown">{property.agent?.email}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

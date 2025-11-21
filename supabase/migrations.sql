@@ -79,7 +79,21 @@ BEGIN
                    WHERE table_name = 'properties' AND column_name = 'property_code_type') THEN
         ALTER TABLE properties ADD COLUMN property_code_type VARCHAR(50);
     END IF;
+
+    -- Add source_type column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'properties' AND column_name = 'source_type') THEN
+        ALTER TABLE properties ADD COLUMN source_type VARCHAR(20) DEFAULT 'Others';
+    END IF;
 END $$;
+
+-- Add CHECK constraint (outside DO block for better compatibility)
+ALTER TABLE properties DROP CONSTRAINT IF EXISTS properties_source_type_check;
+ALTER TABLE properties ADD CONSTRAINT properties_source_type_check 
+    CHECK (source_type IS NULL OR source_type IN ('Inhouse', 'Others'));
+
+-- Set default value
+ALTER TABLE properties ALTER COLUMN source_type SET DEFAULT 'Others';
 
 -- Create function to handle user profile creation on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()

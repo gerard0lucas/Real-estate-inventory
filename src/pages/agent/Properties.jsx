@@ -24,6 +24,7 @@ export default function AgentProperties() {
     project: '',
     minPricePerSqft: '',
     maxPricePerSqft: '',
+    source_type: '',
   })
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'table'
@@ -369,6 +370,10 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
         if (property.type?.toLowerCase().includes(lowerSearchTerm)) return true
         if (property.property_code_type?.toLowerCase().includes(lowerSearchTerm)) return true
         
+        // Check source type
+        const propertySourceType = property.source_type || 'Others'
+        if (propertySourceType.toLowerCase().includes(lowerSearchTerm)) return true
+        
         return false
       })
     }
@@ -422,6 +427,14 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
       filtered = filtered.filter((property) => property.project_id === filters.project)
     }
 
+    // Source type filter
+    if (filters.source_type) {
+      filtered = filtered.filter((property) => {
+        const propertySourceType = property.source_type || 'Others' // Default to 'Others' if null
+        return propertySourceType === filters.source_type
+      })
+    }
+
     // Price per sqft range filter
     if (filters.minPricePerSqft) {
       filtered = filtered.filter((property) => {
@@ -453,6 +466,7 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
       project: '',
       minPricePerSqft: '',
       maxPricePerSqft: '',
+      source_type: '',
     })
   }
 
@@ -645,6 +659,19 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
                 </div>
 
                 <div>
+                  <label className="block text-sm font-medium text-brown mb-2">Source Type</label>
+                  <select
+                    value={filters.source_type}
+                    onChange={(e) => setFilters({ ...filters, source_type: e.target.value })}
+                    className="input-field"
+                  >
+                    <option value="">All Sources</option>
+                    <option value="Inhouse">Inhouse</option>
+                    <option value="Others">Others</option>
+                  </select>
+                </div>
+
+                <div>
                   <label className="block text-sm font-medium text-brown mb-2">Project</label>
                   <select
                     value={filters.project}
@@ -659,7 +686,10 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
                     ))}
                   </select>
                 </div>
+              </div>
 
+              {/* Property Details Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-brown mb-2">Bedrooms</label>
                   <select
@@ -672,6 +702,21 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
                     <option value="2">2 Bedrooms</option>
                     <option value="3">3 Bedrooms</option>
                     <option value="4+">4+ Bedrooms</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-brown mb-2">Bathrooms</label>
+                  <select
+                    value={filters.bathrooms}
+                    onChange={(e) => setFilters({ ...filters, bathrooms: e.target.value })}
+                    className="input-field"
+                  >
+                    <option value="">Any</option>
+                    <option value="1">1 Bathroom</option>
+                    <option value="2">2 Bathrooms</option>
+                    <option value="3">3 Bathrooms</option>
+                    <option value="4+">4+ Bathrooms</option>
                   </select>
                 </div>
               </div>
@@ -723,23 +768,8 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
                 </div>
               </div>
 
-              {/* Additional Filters Row */}
+              {/* Price per Sqft Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-brown mb-2">Bathrooms</label>
-                  <select
-                    value={filters.bathrooms}
-                    onChange={(e) => setFilters({ ...filters, bathrooms: e.target.value })}
-                    className="input-field"
-                  >
-                    <option value="">Any</option>
-                    <option value="1">1 Bathroom</option>
-                    <option value="2">2 Bathrooms</option>
-                    <option value="3">3 Bathrooms</option>
-                    <option value="4+">4+ Bathrooms</option>
-                  </select>
-                </div>
-
                 <div>
                   <label className="block text-sm font-medium text-brown mb-2">Min Price/sqft (₹)</label>
                   <input
