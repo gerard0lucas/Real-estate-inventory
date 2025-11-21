@@ -502,6 +502,7 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
     // CSV Headers - matching the expected format
     const headers = [
       'Property Code',
+      'Title',
       'Type',
       'Property Type',
       'Property Code Type',
@@ -576,6 +577,7 @@ Status: ${property.status?.charAt(0).toUpperCase() + property.status?.slice(1)}
 
         return [
           escapeCSV(property.property_code || ''),
+          escapeCSV(property.title || ''),
           escapeCSV(property.type || ''),
           escapeCSV(property.type || ''),
           escapeCSV(property.property_code_type || ''),
